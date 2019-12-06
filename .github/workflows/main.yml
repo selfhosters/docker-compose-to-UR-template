@@ -25,11 +25,3 @@ jobs:
     - name: Pushes the Docker image
       if: github.event_name != 'pull_request' && contains(github.ref, 'actions') != 'true'
       run: docker push $docker_username/$repo
-    
-    - name: Docker Hub README & description sync
-      if: github.event_name != 'pull_request' && contains(github.ref, 'actions') != 'true'
-      uses: meeDamian/sync-readme@v1.0.5
-      with:
-        user: $docker_username
-        pass: $docker_token
-        slug: $docker_username/$repo
