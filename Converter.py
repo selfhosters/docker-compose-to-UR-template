@@ -8,9 +8,9 @@ base.append(ET.Comment("Generated with Selfhosters compose>template script"))
 
 class ReadYAML:
     def __init__(self):
-        with open('./data/docker-compose.yml') as f:
+        with open('data/docker-compose.yml') as f:
             self.compose = yaml.load(f, Loader=yaml.FullLoader)
-        with open('./data/defaults.yml') as f:
+        with open('data/defaults.yml') as f:
             self.defaults = yaml.load(f, Loader=yaml.FullLoader)
         self.services = self._getservices(self)
 
@@ -211,7 +211,7 @@ class GenXML:
         for atr in self.conf_list:
             ET.SubElement(elem, 'Config', attrib=atr)
         xmlstr = minidom.parseString(ET.tostring(elem)).toprettyxml(indent="   ")
-        myfile = open(f"./data/{self.service}.xml", "w")
+        myfile = open(f"data/{self.service}.xml", "w")
         myfile.write(xmlstr)
         print(f"{self.service} Created\n")
 
