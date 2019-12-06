@@ -1,0 +1,35 @@
+name: Test And Build BOT
+on: [push]
+
+jobs:   
+  build-and-push:
+    runs-on: ubuntu-latest
+ 
+    env:
+      docker_username: roxedus
+      docker_token: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      repo : compose-templater
+      ref: ${{github.ref}}
+ 
+    steps:
+    - uses: actions/checkout@v1        
+    - name: Build the Docker image
+      run: |
+        branch="${ref##*/}"
+        echo $branch
+        docker build -t $docker_username/$repo:$branch -t $docker_username/$repo:$branch-${{github.sha}} .       
+ 
+    - name: Login to registry
+      run: echo $docker_token | docker login -u $docker_username --password-stdin
+      
+    - name: Pushes the Docker image
+      if: github.event_name != 'pull_request' && contains(github.ref, 'actions') != 'true'
+      run: docker push $docker_username/$repo
+    
+    - name: Docker Hub README & description sync
+      if: github.event_name != 'pull_request' && contains(github.ref, 'actions') != 'true'
+      uses: meeDamian/sync-readme@v1.0.5
+      with:
+        user: $docker_username
+        pass: $docker_token
+        slug: $docker_username/$repo
