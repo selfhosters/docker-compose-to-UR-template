@@ -7,7 +7,7 @@ jobs:
  
     env:
       docker_username: roxedus
-      docker_token: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      docker_token: ${{ secrets.docker_token }}
       repo : compose-templater
       ref: ${{github.ref}}
  
