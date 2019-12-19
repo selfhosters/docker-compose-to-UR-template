@@ -34,7 +34,7 @@ class ReadYAML:
         return self.defaults['branding'][field]
 
     @staticmethod
-    def _getservices(self):
+    def _get_services(self):
         _services = {}
         ind = 0
         if not _services:
@@ -106,14 +106,30 @@ class Generator:
             return self.elem
 
     def data(self, **kwargs2: {}):
-        kwargs = {}
-        for volumes in self.reader.list_field(self.service, "volumes"):
-            for host, container, *vargs in volumes:
-                if vargs:
-                    kwargs["Mode"] = vargs[0]
-                kwargs = {**kwargs, **kwargs2}
-                GenXML.data(self, host, container, **kwargs)
-            return self.elem
+        best_guess = {"Target":
+                      {"/config": {"Display": "always-hide", "type": "Path", "Required": "true",
+                                   "Default": f"/mnt/user/appdata/{self.service}",
+                                   "Name": "Appdata"}}}
+        volumes = self.reader.list_field(self.service, "volumes")
+        for n in range(len(volumes)):
+            kwargs = {}
+            host, container, *vargs = volumes[n]
+            try:
+                kwargs = best_guess["Target"][container]
+            except KeyError:
+                pass
+            if vargs:
+                kwargs["Mode"] = vargs[0]
+            kwargs = {**kwargs, **kwargs2}
+            GenXML.data(self, host, container, **kwargs)
+        return self.elem
+
+    def advanced(self, **kwargs: {}):
+        try:
+            kwargs["command"] = self.reader.list_data(self.service, "command")
+        except KeyError:
+            pass
+        GenXML.advanced(self, **kwargs)
 
     def metadata(self, **kwargs2: {}):
         kwargs = {}
@@ -194,6 +210,9 @@ class GenXML:
         GenXML.conf_list.append(atr)
         return self.elem
 
+    def advanced(self, **kwargs):
+        ET.SubElement(self.elem, 'PostArgs').text = kwargs.get("command", "")
+
     def metadata(self, **kwargs):
         self.name = kwargs.get("name", "SomeString")
         ET.SubElement(self.elem, 'TemplateURL').text = kwargs.get("templateurl", "SomeString")
@@ -210,9 +229,9 @@ class GenXML:
     def _write(self, elem):
         for atr in self.conf_list:
             ET.SubElement(elem, 'Config', attrib=atr)
-        xmlstr = minidom.parseString(ET.tostring(elem)).toprettyxml(indent="   ")
-        myfile = open(f"data/{self.service}.xml", "w")
-        myfile.write(xmlstr)
+        xml_string = minidom.parseString(ET.tostring(elem)).toprettyxml(indent="   ")
+        my_file = open(f"data/{self.service}.xml", "w")
+        my_file.write(xml_string)
         print(f"{self.service} Created\n")
 
 
@@ -221,10 +240,12 @@ def run():
     for service in services:
         elm = Generator(services[service])
         elm.metadata()
+        elm.advanced()
         elm.variable()
         elm.network()
         elm.data()
         GenXML(services[service])._write(elm.elem)
+
 
 if __name__ == '__main__':
     run()
