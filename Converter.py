@@ -12,7 +12,7 @@ class ReadYAML:
             self.compose = yaml.load(f, Loader=yaml.FullLoader)
         with open('data/defaults.yml') as f:
             self.defaults = yaml.load(f, Loader=yaml.FullLoader)
-        self.services = self._getservices(self)
+        self.services = self._get_services(self)
 
     def list_field(self, service, field):
         decrim = {"environment": "=", "ports": "=", "volumes": ":"}
