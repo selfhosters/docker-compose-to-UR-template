@@ -15,7 +15,7 @@ class ReadYAML:
         self.services = self._get_services(self)
 
     def list_field(self, service, field):
-        decrim = {"environment": "=", "ports": "=", "volumes": ":"}
+        decrim = {"environment": "=", "ports": ":", "volumes": ":"}
         fields = []
         try:
             for entries in self.compose['services'][service][field]:
