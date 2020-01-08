@@ -59,20 +59,22 @@ class Generator:
         self.gen.write()
 
     def variable(self, **kwargs2: {}):
-        kwargs = {}
         fields = self.reader.list_field(self.service, "environment")
         if fields:
             for name, value in fields:
+                kwargs = {}
                 if name == "TZ":
                     continue
 
-                best_guess = {"Name": {"PUID": {"Target": "100", "Display": "advanced-hide", "Required": "true"},
-                                       "PGID": {"Target": "99", "Display": "advanced-hide", "Required": "true"}},
+                best_guess = {"Name": {"PUID": {"Target": "100", "Default": "100", "Display": "advanced-hide",
+                                                "Required": "true"},
+                                       "PGID": {"Target": "99", "Default": "99", "Display": "advanced-hide",
+                                                "Required": "true"}},
                               "should_mask": {"password": {"Mask": "true"}}, "token": {"Mask": "true"}
                               }
                 try:
-                    for names in best_guess["Name"][name]:
-                        kwargs[names] = best_guess["Name"][name][names]
+                    if best_guess["Name"][name]:
+                        kwargs = {**kwargs, **best_guess['Name'][name]}
                 except KeyError:
                     pass
                 try:
